@@ -103,6 +103,15 @@ def create_time_series(dt_list, act_labels, trial_codes, mode="mag", labeled=Tru
         cols += ["act", "id", "weight", "height", "age", "gender", "trial"]
     
     dataset = pd.DataFrame(data=dataset, columns=cols)
+
+    dataset["act"] = dataset["act"].astype(np.uint8)
+    dataset["id"] = dataset["id"].astype(np.uint8)
+    dataset["trial"] = dataset["trial"].astype(np.uint8)
+
+    dataset["weight"] = dataset["weight"].astype(np.uint8)
+    dataset["height"] = dataset["height"].astype(np.uint8)
+    dataset["age"] = dataset["age"].astype(np.uint8)
+    dataset["gender"] = dataset["gender"].astype(np.uint8)
     return dataset
 #________________________________
 
