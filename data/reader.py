@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from data import paths
 
 def get_ds_infos():
     """
@@ -16,8 +17,8 @@ def get_ds_infos():
         A pandas DataFrame that contains inforamtion about data subjects' attributes 
     """ 
 
-    dss = pd.read_csv("data_subjects_info.csv")
-    print("[INFO] -- Data subjects' information is imported.")
+    dss = pd.read_csv(paths.SUBJECTS_INFO_CSV_PATH)
+    # print("[INFO] -- Data subjects' information is imported.")
     
     return dss
 
@@ -41,7 +42,7 @@ def set_data_types(data_types=["userAcceleration"]):
     return dt_list
 
 
-def creat_time_series(dt_list, act_labels, trial_codes, mode="mag", labeled=True):
+def create_time_series(dt_list, act_labels, trial_codes, mode="mag", labeled=True):
     """
     Args:
         dt_list: A list of columns that shows the type of data we want.
@@ -66,11 +67,11 @@ def creat_time_series(dt_list, act_labels, trial_codes, mode="mag", labeled=True
         
     ds_list = get_ds_infos()
     
-    print("[INFO] -- Creating Time-Series")
+    # print("[INFO] -- Creating Time-Series")
     for sub_id in ds_list["code"]:
         for act_id, act in enumerate(act_labels):
             for trial in trial_codes[act_id]:
-                fname = 'A_DeviceMotion_data/'+act+'_'+str(trial)+'/sub_'+str(int(sub_id))+'.csv'
+                fname = str(paths.A_DEVICE_MOTION_DATA_PATH)+'/'+act+'_'+str(trial)+'/sub_'+str(int(sub_id))+'.csv'
                 raw_data = pd.read_csv(fname)
                 raw_data = raw_data.drop(['Unnamed: 0'], axis=1)
                 vals = np.zeros((len(raw_data), num_data_cols))
@@ -118,12 +119,15 @@ TRIAL_CODES = {
 
 ## Here we set parameter to build labeld time-series from dataset of "(A)DeviceMotion_data"
 ## attitude(roll, pitch, yaw); gravity(x, y, z); rotationRate(x, y, z); userAcceleration(x,y,z)
-sdt = ["attitude", "userAcceleration"]
-print("[INFO] -- Selected sensor data types: "+str(sdt))    
-act_labels = ACT_LABELS [0:4]
-print("[INFO] -- Selected activites: "+str(act_labels))    
-trial_codes = [TRIAL_CODES[act] for act in act_labels]
-dt_list = set_data_types(sdt)
-dataset = creat_time_series(dt_list, act_labels, trial_codes, mode="raw", labeled=True)
-print("[INFO] -- Shape of time-Series dataset:"+str(dataset.shape))    
-dataset.head()
+
+
+def get_data():
+    sdt = ["attitude", "userAcceleration"]
+    # print("[INFO] -- Selected sensor data types: "+str(sdt))    
+    act_labels = ACT_LABELS
+    # print("[INFO] -- Selected activites: "+str(act_labels))    
+    trial_codes = [TRIAL_CODES[act] for act in act_labels]
+    dt_list = set_data_types(sdt)
+    dataset = create_time_series(dt_list, act_labels, trial_codes, mode="raw", labeled=True)
+    # print("[INFO] -- Shape of time-Series dataset:"+str(dataset.shape))    
+    return dataset

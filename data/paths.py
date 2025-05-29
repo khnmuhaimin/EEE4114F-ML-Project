@@ -1,5 +1,9 @@
 import sys
 from pathlib import Path
 
-main_dir = Path(sys.argv[0]).resolve().parent   # dir of the main file
-motion_sense_path = main_dir.parent / "motion-sense"  # dir of motion sense repo
+MAIN_DIR = Path(sys.argv[0]).resolve().parent   # dir of the main file
+MOTION_SENSE_PATH = MAIN_DIR.parent / "motion-sense"  # dir of motion sense repo
+SUBJECTS_INFO_CSV_PATH = MOTION_SENSE_PATH / "data" / "data_subjects_info.csv"
+A_DEVICE_MOTION_DATA_PATH = MOTION_SENSE_PATH / "data" / "A_DeviceMotion_data"
+B_DEVICE_MOTION_DATA_PATH = MOTION_SENSE_PATH / "data" / "B_DeviceMotion_data"
+C_DEVICE_MOTION_DATA_PATH = MOTION_SENSE_PATH / "data" / "C_DeviceMotion_data"
