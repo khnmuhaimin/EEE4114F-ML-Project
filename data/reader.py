@@ -121,8 +121,10 @@ TRIAL_CODES = {
 ## attitude(roll, pitch, yaw); gravity(x, y, z); rotationRate(x, y, z); userAcceleration(x,y,z)
 
 
-def get_data():
-    sdt = ["attitude", "userAcceleration"]
+def get_data(columns=None):
+    if columns is None:
+        columns = ["attitude", "gravity", "rotationRate", "userAcceleration"]
+    sdt = columns
     # print("[INFO] -- Selected sensor data types: "+str(sdt))    
     act_labels = ACT_LABELS
     # print("[INFO] -- Selected activites: "+str(act_labels))    
