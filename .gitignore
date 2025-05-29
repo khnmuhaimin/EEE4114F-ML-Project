@@ -1,2 +1,3 @@
 motion-sense
 .venv
+./**/__pycache__
