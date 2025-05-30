@@ -4,7 +4,7 @@ import pandas as pd
 from collections import defaultdict
 
 from data.reader import get_data
-from function_cache.function_cache import DEBUG_CACHE, DEFAULT_CACHE
+from function_cache.function_cache import DEFAULT_CACHE
 
 """
 Let's think
@@ -33,7 +33,7 @@ i also want to convert some values
 
 SAMPLES_PER_WINDOW = 250
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def number_of_windows_with_no_overlap_per_action() -> dict[np.uint8, int]:
     data = get_data()
     unique_trials = data["trial"].unique()
@@ -50,14 +50,14 @@ def number_of_windows_with_no_overlap_per_action() -> dict[np.uint8, int]:
     return dict(actions_to_windows)
 
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def max_number_of_windows_with_no_overlap_for_all_actions() -> int:
     actions_to_windows = number_of_windows_with_no_overlap_per_action()
     max_action = max(list(actions_to_windows.items()), key=lambda item: item[1])
     return max_action[1]
 
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def number_of_timeseries_per_action() -> dict[np.uint8, int]:
     data = get_data()
     unique_trials = data["trial"].unique()
@@ -82,7 +82,7 @@ I also need to know the length of a specific trial
 
 """
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def number_of_samples_per_timeseries() -> dict[np.uint8, dict[np.uint8, int]]:
     """
     Format of result:
@@ -99,7 +99,7 @@ def number_of_samples_per_timeseries() -> dict[np.uint8, dict[np.uint8, int]]:
     return samples_per_time_series
 
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def number_of_samples_per_action() -> dict[np.uint8, int]:
     data = get_data()
     unique_actions = data["act"].unique()
@@ -121,7 +121,7 @@ The number of windows per timeseries must be proportional the that timeseries le
 I need to know the number of samples per action which i already have a function for a
 """
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def action_per_timeseries() -> dict[np.uint8, dict[np.uint8, int]]:
     data = get_data()
     unique_trials = data["trial"].unique()
@@ -135,7 +135,7 @@ def action_per_timeseries() -> dict[np.uint8, dict[np.uint8, int]]:
     return _action_per_time_series
 
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def number_of_windows_per_timeseries():
     data = get_data()
     samples_per_time_series = number_of_samples_per_timeseries()
@@ -155,7 +155,7 @@ def number_of_windows_per_timeseries():
     
 
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def start_index_per_timeseries() -> dict[np.uint8, dict[np.uint8, int]]:
     data = get_data()
     unique_trials = data["trial"].unique()
@@ -169,7 +169,7 @@ def start_index_per_timeseries() -> dict[np.uint8, dict[np.uint8, int]]:
     return _start_indices_per_timeseries
 
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def window_start_indices_per_timeseries() -> dict[np.uint8, dict[np.uint8, list[int]]]:
     _start_indices_per_timeseries = start_index_per_timeseries()
     samples_per_timeseries = number_of_samples_per_timeseries()
@@ -189,7 +189,7 @@ def window_start_indices_per_timeseries() -> dict[np.uint8, dict[np.uint8, list[
     return _window_start_indices_per_timeseries
 
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def window_start_indices_per_action() -> dict[np.uint8, list[int]]:
     _window_start_indices_per_timeseries = window_start_indices_per_timeseries()
     _action_per_timeseries = action_per_timeseries()
@@ -201,7 +201,7 @@ def window_start_indices_per_action() -> dict[np.uint8, list[int]]:
     return dict(_window_starts_indices_per_action)
 
 
-@DEFAULT_CACHE.memoize()
+@DEFAULT_CACHE.memoize(tag="WINDOWER")
 def split_indices():
     random.seed(1234)
     train, val, test = [], [], []
