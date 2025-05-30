@@ -170,49 +170,60 @@ def start_index_per_timeseries() -> dict[np.uint8, dict[np.uint8, int]]:
 
 
 @DEFAULT_CACHE.memoize()
-def start_window_indices_per_timeseries() -> dict[np.uint8, dict[np.uint8, list[int]]]:
+def window_start_indices_per_timeseries() -> dict[np.uint8, dict[np.uint8, list[int]]]:
     _start_indices_per_timeseries = start_index_per_timeseries()
     samples_per_timeseries = number_of_samples_per_timeseries()
     windows_per_timeseries = number_of_windows_per_timeseries()
-    _start_window_indices_per_timeseries = {}
+    _window_start_indices_per_timeseries = {}
     for trial, inner_dict in _start_indices_per_timeseries.items():
-        _start_window_indices_per_timeseries[trial] = {}
+        _window_start_indices_per_timeseries[trial] = {}
         for _id, start_index in inner_dict.items():
-            start_window_indices = np.linspace(
+            window_start_indices = np.linspace(
                 0,
                 samples_per_timeseries[trial][_id] - SAMPLES_PER_WINDOW,
                 num=windows_per_timeseries[trial][_id],
                 dtype=int
             )
-            start_window_indices = [i + start_index for i in start_window_indices]
-            _start_window_indices_per_timeseries[trial][_id] = start_window_indices
-    return _start_window_indices_per_timeseries
+            window_start_indices = [i + start_index for i in window_start_indices]
+            _window_start_indices_per_timeseries[trial][_id] = window_start_indices
+    return _window_start_indices_per_timeseries
 
 
 @DEFAULT_CACHE.memoize()
-def start_windows_indices_per_action() -> dict[np.uint8, list[int]]:
-    _start_window_indices_per_timeseries = start_window_indices_per_timeseries()
+def window_start_indices_per_action() -> dict[np.uint8, list[int]]:
+    _window_start_indices_per_timeseries = window_start_indices_per_timeseries()
     _action_per_timeseries = action_per_timeseries()
-    _start_windows_indices_per_action = defaultdict(list)
-    for trial, inner in _start_window_indices_per_timeseries.items():
-        for _id, start_window_indices in inner.items():
+    _window_starts_indices_per_action = defaultdict(list)
+    for trial, inner in _window_start_indices_per_timeseries.items():
+        for _id, window_start_indices in inner.items():
             action = _action_per_timeseries[trial][_id]
-            _start_windows_indices_per_action[action] += start_window_indices
-    return dict(_start_windows_indices_per_action)
+            _window_starts_indices_per_action[action] += window_start_indices
+    return dict(_window_starts_indices_per_action)
 
 
 @DEFAULT_CACHE.memoize()
 def split_indices():
     random.seed(1234)
     train, val, test = [], [], []
-    for action, start_window_indices in start_windows_indices_per_action.items():
-        start_window_indices = start_window_indices.copy()
-        random.shuffle(start_window_indices)
-        n = len(start_window_indices)
+    for action, window_start_indices in window_start_indices_per_action.items():
+        window_start_indices = window_start_indices.copy()
+        random.shuffle(window_start_indices)
+        n = len(window_start_indices)
         n_train = int(n * 0.6)
         n_val = int((n - n_train) * 0.5)
 
-        train += start_window_indices[:n_train]
-        val += start_window_indices[n_train:n_train + n_val]
-        test += start_window_indices[n_train + n_val:]
+        train += window_start_indices[:n_train]
+        val += window_start_indices[n_train:n_train + n_val]
+        test += window_start_indices[n_train + n_val:]
     return train, val, test
+
+
+def train_window_start_indices():
+    return split_indices()[0]
+
+
+def validate_window_start_indices():
+    return split_indices()[1]
+
+def test_window_start_indices():
+    return split_indices()[2]
