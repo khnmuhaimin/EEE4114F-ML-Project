@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from data import paths
+from function_cache.function_cache import DEFAULT_CACHE
 
 def get_ds_infos():
     """
@@ -112,6 +113,7 @@ def create_time_series(dt_list, act_labels, trial_codes, mode="mag", labeled=Tru
     dataset["height"] = dataset["height"].astype(np.uint8)
     dataset["age"] = dataset["age"].astype(np.uint8)
     dataset["gender"] = dataset["gender"].astype(np.uint8)
+    dataset = ddatasetf.reset_index(drop=True)  # just for safety
     return dataset
 #________________________________
 
@@ -130,10 +132,9 @@ TRIAL_CODES = {
 ## attitude(roll, pitch, yaw); gravity(x, y, z); rotationRate(x, y, z); userAcceleration(x,y,z)
 
 
-def get_data(columns=None):
-    if columns is None:
-        columns = ["attitude", "gravity", "rotationRate", "userAcceleration"]
-    sdt = columns
+@DEFAULT_CACHE.memoize()
+def get_data():
+    sdt = ("attitude", "gravity", "rotationRate", "userAcceleration")
     # print("[INFO] -- Selected sensor data types: "+str(sdt))    
     act_labels = ACT_LABELS
     # print("[INFO] -- Selected activites: "+str(act_labels))    
