@@ -113,7 +113,7 @@ def create_time_series(dt_list, act_labels, trial_codes, mode="mag", labeled=Tru
     dataset["height"] = dataset["height"].astype(np.uint8)
     dataset["age"] = dataset["age"].astype(np.uint8)
     dataset["gender"] = dataset["gender"].astype(np.uint8)
-    dataset = ddatasetf.reset_index(drop=True)  # just for safety
+    dataset = dataset.reset_index(drop=True)  # just for safety
     return dataset
 #________________________________
 
