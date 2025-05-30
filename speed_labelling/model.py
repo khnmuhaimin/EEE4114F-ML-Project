@@ -19,7 +19,7 @@ JOG_ACTION_LABEL = ACT_LABELS.index("jog")
 HORIZONTAL_ACTION_LABELS = [i for i in range(len(ACT_LABELS)) if ACT_LABELS[i] in ["wlk", "jog"]]
 
 
-@DEFAULT_CACHE.memoize(tag="SPEED_MODEL")
+# @DEFAULT_CACHE.memoize(tag="SPEED_MODEL")
 def compute_acceleration_magnitude() -> np.array:
     data = get_data()
     sum_of_squares = np.sum(
@@ -34,7 +34,7 @@ def compute_acceleration_magnitude() -> np.array:
     return np.sqrt(sum_of_squares)
 
 
-@DEFAULT_CACHE.memoize(tag="SPEED_MODEL")
+# @DEFAULT_CACHE.memoize(tag="SPEED_MODEL")
 def compute_acceleration_std() -> pd.DataFrame:
     acceleration = compute_acceleration_magnitude()
     window_start_indices =  train_window_start_indices()
@@ -44,23 +44,25 @@ def compute_acceleration_std() -> pd.DataFrame:
     return acceleration_std
 
 
-@DEFAULT_CACHE.memoize(tag="SPEED_MODEL")
-def compute_action() -> pd.DataFrame:
-    data = get_data()
-    window_start_indices =  train_window_start_indices()
-    high_motion = np.empty_like(window_start_indices)
-    for i, window_index in enumerate(window_start_indices):
-        high_motion[i] = data.at[window_index, "act"] in HIGH_MOTION_ACTION_LABELS
-    return high_motion
+# @DEFAULT_CACHE.memoize(tag="SPEED_MODEL")
+# def compute_action() -> pd.DataFrame:
+#     data = get_data()
+#     window_start_indices =  train_window_start_indices()
+#     high_motion = np.empty_like(window_start_indices)
+#     for i, window_index in enumerate(window_start_indices):
+#         high_motion[i] = data.at[window_index, "act"] in HIGH_MOTION_ACTION_LABELS
+#     return high_motion
 
 
 def plot_acceleration_std_histograms() -> None:
-    high_motion = compute_action()
+    actions = compute_action()
+    print(actions.unique())
     acceleration_std = compute_acceleration_std()
     all_data = acceleration_std
+    print(len(actions), sum(actions < 4), sum(actions >= 4))
     bins = np.histogram_bin_edges(all_data, bins=50)
-    plt.hist(acceleration_std[high_motion == 1], bins=bins, alpha=0.5, label='High Motion')
-    plt.hist(acceleration_std[high_motion == 0], bins=bins, alpha=0.5, label='Low Motion')
+    plt.hist(acceleration_std[actions < 4], bins=bins, alpha=0.5, label='High Motion')
+    plt.hist(acceleration_std[actions >= 4], bins=bins, alpha=0.5, label='Low Motion')
     plt.legend()
     plt.show()
 
@@ -184,7 +186,7 @@ def compute_data_per_window() -> pd.DataFrame:
 
 def compute_action() -> np.array:
     data = get_data()
-    window_start_indices =  train_window_start_indices()
+    window_start_indices = train_window_start_indices()
     return data[data.index.isin(window_start_indices)]["act"]
 
 
@@ -193,7 +195,7 @@ def plot_data() -> None:
     # data = get_data()
     average_combined_acceleration = compute_data_per_window()
     bins = np.histogram_bin_edges(average_combined_acceleration, bins=50)
-    for action in range(4, 6):
+    for action in range(3, 5):
         plt.hist(average_combined_acceleration[actions == action], bins=bins, alpha=0.5, label=ACT_LABELS[action])
     plt.legend()
     plt.show()

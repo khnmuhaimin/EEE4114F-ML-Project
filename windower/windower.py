@@ -227,3 +227,29 @@ def validate_window_start_indices():
 
 def test_window_start_indices():
     return split_indices()[2]
+
+
+def split_indices_by_users():
+    data = get_data()
+    np.random.seed(1234)
+    window_start_indices = np.concatenate(split_indices())
+    users_to_indices = defaultdict(list)
+    
+    unique_ids = list(data["id"].unique())
+    np.random.shuffle(unique_ids)
+    
+    train_ids = unique_ids[:int(len(unique_ids) * 0.75)]
+    test_ids = unique_ids[int(len(unique_ids) * 0.75):]
+    
+    for i in window_start_indices:
+        users_to_indices[data.at[i, "id"]].append(i)
+    
+    train_indices = [i for uid in train_ids for i in users_to_indices[uid]]
+    test_indices = [i for uid in test_ids for i in users_to_indices[uid]]
+    
+    return train_indices, test_indices
+
+
+
+
+
