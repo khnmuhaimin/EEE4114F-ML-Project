@@ -45,7 +45,7 @@ def compute_acceleration_std() -> pd.DataFrame:
 
 
 @DEFAULT_CACHE.memoize(tag="SPEED_MODEL")
-def compute_high_motion() -> pd.DataFrame:
+def compute_action() -> pd.DataFrame:
     data = get_data()
     window_start_indices =  train_window_start_indices()
     high_motion = np.empty_like(window_start_indices)
@@ -55,7 +55,7 @@ def compute_high_motion() -> pd.DataFrame:
 
 
 def plot_acceleration_std_histograms() -> None:
-    high_motion = compute_high_motion()
+    high_motion = compute_action()
     acceleration_std = compute_acceleration_std()
     all_data = acceleration_std
     bins = np.histogram_bin_edges(all_data, bins=50)
@@ -67,7 +67,7 @@ def plot_acceleration_std_histograms() -> None:
 
 @DEFAULT_CACHE.memoize(tag="SPEED_MODEL")
 def get_speed_level_model():
-    high_motion = compute_high_motion()
+    high_motion = compute_action()
     acceleration_std = compute_acceleration_std()
     model = LogisticRegression()
     model.fit(acceleration_std.reshape(-1, 1), high_motion)
@@ -126,7 +126,80 @@ def plot_horizontal_motion_histograms() -> None:
 
 
 
-# plot_acceleration_std_histograms()
-plot_horizontal_motion_histograms()
+def compute_combined_acceleration_magnitude() -> np.array:
+    data = get_data()
+    sum_of_squares = np.sum(
+            [
+                np.square(data["userAcceleration.x"] + data["gravity.x"]),
+                np.square(data["userAcceleration.y"] + data["gravity.y"]),
+                np.square(data["userAcceleration.z"] + data["gravity.z"]),
+            ],
+            axis=0,
+            dtype=np.float32
+        )
+    return np.sqrt(sum_of_squares)
 
+
+def compute_average_combined_acceleration() -> pd.DataFrame:
+    acceleration = compute_combined_acceleration_magnitude()
+    window_start_indices =  train_window_start_indices()
+    average_combined_acceleration_std = np.empty_like(window_start_indices, dtype=np.float32)
+    for i, window_index in enumerate(window_start_indices):
+        average_combined_acceleration_std[i] = np.std(acceleration[window_index:window_index+SAMPLES_PER_WINDOW])
+    return average_combined_acceleration_std
+
+
+
+# Doing the test for roll
+def compute_combined_acceleration_magnitude() -> np.array:
+    data = get_data()
+    sum_of_squares = np.sum(
+            [
+                np.square(data["userAcceleration.x"] + data["gravity.x"]),
+                np.square(data["userAcceleration.y"] + data["gravity.y"]),
+                np.square(data["userAcceleration.z"] + data["gravity.z"]),
+            ],
+            axis=0,
+            dtype=np.float32
+        )
+    return np.sqrt(sum_of_squares)
+
+
+def compute_data_per_window() -> pd.DataFrame:
+    data = get_data()
+    window_start_indices =  train_window_start_indices()
+    average_combined_acceleration_std = np.empty_like(window_start_indices, dtype=np.float32)
+    for i, window_index in enumerate(window_start_indices):
+        average_combined_acceleration_std[i] = np.mean(compute_acceleration_magnitude()[window_index:window_index+SAMPLES_PER_WINDOW])
+    return average_combined_acceleration_std
+
+
+
+
+
+
+
+
+
+
+def compute_action() -> np.array:
+    data = get_data()
+    window_start_indices =  train_window_start_indices()
+    return data[data.index.isin(window_start_indices)]["act"]
+
+
+def plot_data() -> None:
+    actions = np.array(compute_action())
+    # data = get_data()
+    average_combined_acceleration = compute_data_per_window()
+    bins = np.histogram_bin_edges(average_combined_acceleration, bins=50)
+    for action in range(4, 6):
+        plt.hist(average_combined_acceleration[actions == action], bins=bins, alpha=0.5, label=ACT_LABELS[action])
+    plt.legend()
+    plt.show()
+
+
+# plot_acceleration_std_histograms()
+# plot_horizontal_motion_histograms()
+plot_data()
 

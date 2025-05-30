@@ -25,12 +25,12 @@ print(f"[INFO]: Number of data points: {len(data)}")
 
 
 # Uncomment to show bounds of the dataset
-# print(np.min(data["attitude.roll"]), np.min(data["attitude.pitch"]), np.min(data["attitude.yaw"]))
-# print(np.max(data["attitude.roll"]), np.max(data["attitude.pitch"]), np.max(data["attitude.yaw"]))
-# print(np.min(data["gravity.x"]), np.min(data["gravity.y"]), np.min(data["gravity.z"]))
-# print(np.max(data["gravity.x"]), np.max(data["gravity.y"]), np.max(data["gravity.z"]))
-# print(np.min(data["rotationRate.x"]), np.min(data["rotationRate.y"]), np.min(data["rotationRate.z"]))
-# print(np.max(data["rotationRate.x"]), np.max(data["rotationRate.y"]), np.max(data["rotationRate.z"]))
-# print(np.min(data["userAcceleration.x"]), np.min(data["userAcceleration.y"]), np.min(data["userAcceleration.z"]))
-# print(np.max(data["userAcceleration.x"]), np.max(data["userAcceleration.y"]), np.max(data["userAcceleration.z"]))
+print(np.min(data["attitude.roll"]), np.min(data["attitude.pitch"]), np.min(data["attitude.yaw"]))
+print(np.max(data["attitude.roll"]), np.max(data["attitude.pitch"]), np.max(data["attitude.yaw"]))
+print(np.min(data["gravity.x"]), np.min(data["gravity.y"]), np.min(data["gravity.z"]))
+print(np.max(data["gravity.x"]), np.max(data["gravity.y"]), np.max(data["gravity.z"]))
+print(np.min(data["rotationRate.x"]), np.min(data["rotationRate.y"]), np.min(data["rotationRate.z"]))
+print(np.max(data["rotationRate.x"]), np.max(data["rotationRate.y"]), np.max(data["rotationRate.z"]))
+print(np.min(data["userAcceleration.x"]), np.min(data["userAcceleration.y"]), np.min(data["userAcceleration.z"]))
+print(np.max(data["userAcceleration.x"]), np.max(data["userAcceleration.y"]), np.max(data["userAcceleration.z"]))
 

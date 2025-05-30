@@ -3,3 +3,4 @@ motion-sense
 __pycache__
 cache
 debug_cache
+cnn_model.keras
