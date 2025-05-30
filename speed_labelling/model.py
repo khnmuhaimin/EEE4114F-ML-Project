@@ -1,18 +1,22 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
 
-from data.reader import ACT_LABELS
-
-
-HIGH_SPEED_ACTIONS = ["dws","ups", "wlk", "jog"]
-LOW_SPEED_ACTIONS = ["std", "sit"]
-HIGH_MOTION_ACTION_LABELS = [i for i in range(ACT_LABELS) if ACT_LABELS[i] in HIGH_SPEED_ACTIONS]
-LOW_SPEED_ACTION_LABELS = [i for i in range(ACT_LABELS) if ACT_LABELS[i] in LOW_SPEED_ACTIONS]
+from data.reader import ACT_LABELS, get_data
+from function_cache.function_cache import DEFAULT_CACHE
+from windower.windower import SAMPLES_PER_WINDOW, train_window_start_indices
 
 
-def compute_acceleration_magnitude_to_speed_label(data: pd.DataFrame) -> pd.DataFrame:
-    windows = list(data["window"].unique())
+HIGH_MOTION_ACTIONS = ["dws","ups", "wlk", "jog"]
+LOW_MOTION_ACTIONS = ["std", "sit"]
+HIGH_MOTION_ACTION_LABELS = [i for i in range(len(ACT_LABELS)) if ACT_LABELS[i] in HIGH_MOTION_ACTIONS]
+LOW_SPEED_ACTION_LABELS = [i for i in range(len(ACT_LABELS)) if ACT_LABELS[i] in LOW_MOTION_ACTIONS]
+
+
+@DEFAULT_CACHE.memoize()
+def compute_acceleration_magnitude() -> np.array:
+    data = get_data()
     sum_of_squares = np.sum(
             [
                 np.square(data["userAcceleration.x"]),
@@ -22,27 +26,41 @@ def compute_acceleration_magnitude_to_speed_label(data: pd.DataFrame) -> pd.Data
             axis=0,
             dtype=np.float32
         )
-    acceleration_magnitude = np.sqrt(sum_of_squares, dtype=np.float32)
-    acceleration_std = np.empty_like(windows, dtype=np.float32)
-    high_motion = np.empty_like(windows, dtype=np.uint8)
-    for i, window in enumerate(windows):
-        acceleration_std[i] = np.std(acceleration_magnitude[data["window"] == window])
-        high_motion[i] = data[data["window"] == window]["action"][0] in HIGH_MOTION_ACTION_LABELS
-    result = pd.DataFrame.from_dict({
-        "acceleration_std": acceleration_std,
-        "high_motion": high_motion
-    })
-    return result
+    return np.sqrt(sum_of_squares)
 
 
-def compute_ln_acceleration_std(data: pd.DataFrame) -> pd.DataFrame:
-    data["ln_acceleration"] = np.log(data["acceleration_std"])
-    return data
+@DEFAULT_CACHE.memoize()
+def compute_acceleration_std() -> pd.DataFrame:
+    acceleration = compute_acceleration_magnitude()
+    window_start_indices =  train_window_start_indices()
+    acceleration_std = np.empty_like(window_start_indices)
+    for i, window_index in enumerate(window_start_indices):
+        acceleration_std[i] = np.std(acceleration[window_index:window_index+SAMPLES_PER_WINDOW])
+    return acceleration_std
 
 
-def plot_ln_acceleration(data: pd.DataFrame) -> None:
-    plt.scatter(data["ln_acceleration"], np.zeros(len(data)), c=data["high_motion"], cmap='viridis')
+@DEFAULT_CACHE.memoize()
+def compute_high_motion() -> pd.DataFrame:
+    data = get_data()
+    window_start_indices =  train_window_start_indices()
+    high_motion = np.empty_like(window_start_indices)
+    for i, window_index in enumerate(window_start_indices):
+        high_motion[i] = data.at[window_index, "act"] in HIGH_MOTION_ACTION_LABELS
+    return high_motion
+
+
+def plot_ln_acceleration() -> None:
+    high_motion = compute_high_motion()
+    acceleration_std = compute_acceleration_std()
+    plt.scatter(acceleration_std, np.zeros(len(acceleration_std)), c=high_motion, cmap='viridis')
     plt.yticks([])  # Hide y-axis since it's meaningless here
     plt.show()
 
 
+@DEFAULT_CACHE.memoize()
+def get_speed_level_model():
+    high_motion = compute_high_motion()
+    acceleration_std = compute_acceleration_std()
+    model = LogisticRegression()
+    model.fit(acceleration_std.reshape(-1, 1), high_motion)
+    return model

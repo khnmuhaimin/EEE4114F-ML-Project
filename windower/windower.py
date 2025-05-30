@@ -205,7 +205,7 @@ def window_start_indices_per_action() -> dict[np.uint8, list[int]]:
 def split_indices():
     random.seed(1234)
     train, val, test = [], [], []
-    for action, window_start_indices in window_start_indices_per_action.items():
+    for action, window_start_indices in window_start_indices_per_action().items():
         window_start_indices = window_start_indices.copy()
         random.shuffle(window_start_indices)
         n = len(window_start_indices)
